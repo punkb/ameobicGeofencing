@@ -11,108 +11,224 @@ class UsersController < ApplicationController
   # GET /users/1.json
   def show
 
-#Event Data Starts
+    #Variables
+    @places = Place.all
+    @users = User.all
+    
+    @present = Array.new  #Array of In-Boundary users/InStadium Users
+    @boundary = Array.new  #Array of Boundary User (The main output array)
+    @neighbours_array = Array.new
+
+    #Event Data Starts
     @events = Event.all
     @event_Titles = Array.new
-    @event_Coord = Array.new
+    @event_Coord = Array.new     
+        
     @events.each do |e|
       @event_Titles << e.title
       @event_Coord << e.eventcoordinates 
     end
     @eventTitle = @event_Titles[0] #@eventTitle = TestingEvent
     @eventCoords = @event_Coord[0] #@eventCoords = [-6.22998, 53.3516]
-#EventData Ends
-
-    @places = Place.all
-    @users = User.all
-
-    @present = Array.new
-    @boundary = Array.new
-
-    @neighbours_array = Array.new
-
+         #EventData Ends
     
-     def event_neighbour(coords) 
-      if coords == nil
-        coords = @eventCoords
-      end
-      @center_coordinate = coords
+    def first_user(coords) 
       @temp = Array.new
-      @resultCoord
+      @data = Place.geo_near(coords).spherical.max_distance(0.00001)
 
-    @data = Place.geo_near(@center_coordinate).spherical.max_distance(0.00001)
+        @neighbours_array = @data.map{ |d| d._id }
+        @temp = @data.map { |d| d.location.coordinates }
 
-    # @data.each do |d|
-    #   @neighbours_array << d._id 
-    #   @temp = d.location.coordinates
-    # end
-    @neighbours_array = @data.map{|d| d._id}
-    @temp = @data.map {|d| d.location.coordinates}
-     puts "*******@temp***"
-  puts @temp
+        puts "******@tempInside"
+        puts @temp
+        puts @temp.length
+        
+        
+        @temp.map { |e| @t = e  }
+        #@present << @t
 
+    puts "*******@presentLength***"
+    puts @present.length
+
+    puts "*******@tLength***"
+    puts @t.length
+
+    puts "*******@tempLength***"
+    puts @temp.length
+
+    #return @neighbours_array, @temp
+    end
     
-      #search_neighbour(@temp)
-  
+    first_user(@eventCoords)
 
-  
-    return @neighbours_array, @temp
+
+    @distance = 0.00001
+
+    @neighbours_cordinates = Array.new
+
+
+def search_rec(dist, coordinates)
+
+
+
+  unless @present.length == 5
+
+
+@nextData = Array.new()
+for i in 1..coordinates.length
+
+    @localTemp = Array.new()
+    
+
+    puts "******localTemp0****"
+    puts @localTemp
+
+    #@localTemp << coordinates
+
+    coordinates.map { |x| @q = x }
+
+    puts "*****@q***"
+    puts @q
+
+    @queryData = Place.geo_near(@q).spherical.max_distance(dist)
+
+
+    #extract the location.coordinates from @queryData and put it in @localTemp 
+
+    @queryData.map { |x| @localTemp = x.location.coordinates }
+    
+
+    puts "*******@queryData mapped to @localTemp[]"
+    puts @localTemp 
+
+    #Push each set of coordinates from @localTemp to @present
+    # @localTemp.map { |x| @present << x  }
+    @present << @queryData.map { |x| x.location.coordinates }.uniq
+
+     puts "*******@present"
+    puts  @present
+
+    #push each set of coordinates from @localTemp to @nextData for next iteration after this for loop
+    #@localTemp.map { |x| @nextData << x  }
+    @nextData << @localTemp
+
+    puts "*******@nextData"
+    puts @nextData 
+
+
+
   end
 
-  
-event_neighbour(@eventCoords)
-
-puts "*******@temp***"
-  puts @temp
+  #search_rec(dist, @nextData)
 
 
 
 
-
-def search_neighbours(c, d)
-
-
-
-  @queryData = Place.geo_near(c).spherical.max_distance(d)
-
-
-  puts "****@queryData******"
-  puts @queryData.map { |e| e._id }
-
-  if @queryData.nil?
-     @queryData = Place.geo_near(c).spherical.max_distance(1)
-   end
+    # def query(c, dist)
+    #   @queryData = Place.geo_near(c).spherical.max_distance(dist)
+    #   puts "********@queryData****" 
+    #   puts @queryData
+    # end
 
 
-@neighbours_data = @queryData
+    # @localTemp.map { |x| Place.geo_near(@c).spherical.max_distance(dist)  }
 
+    #  puts "******
+    # localTemp.map { |x| query(x, dist)  }}****"
+    # puts @localTemp
 
-  @neighbours_array = @neighbours_data.map{|d| d._id}
-  @neighbours_cordinates = @neighbours_data.map {|d| d.location.coordinates}
-  puts "****@neighbours_cordinates******"
-  puts @neighbours_cordinates
-  puts "******************************"
-  @present = @neighbours_cordinates
+    # # localTemp.map { |x| x.location.coordinates }
 
-# return @present, @neighbours_cordinates, @neighbours_array
+    #  puts "******localTemp.map { |x| x.location.coordinates }****"
+    # puts @localTemp
 
-  
+    # @localTemp.map { |x| @present << x }.uniq
+
+    #  puts "******localTemp.map { |x| @present << x }.uniq****"
+    # puts @localTemp
+
+    # search_rec(dist, @temp)
+
+  # @neighboursData = Place.geo_near(coordinates).spherical.max_distance(dist)
+
+  #    puts "*******@neighboursData***"
+  #  @neighboursData.each do |d|
+  #   puts d.location.coordinates
+  end
+
 end
-@d = 0.00001
-search_neighbours(@temp[0], @d)
+search_rec(@distance, @temp)
+
+
+search_rec(@distance, @nextData)
+search_rec(@distance, @nextData)
+# search_rec(@distance, @nextData)
 
 
 
-  @pre = @present.map { |n| search_neighbours(n, @d) }.uniq 
+  # @neighbours_cordinates = @neighboursData.map { |d| d.location.coordinates  } 
+  #  puts "*******@neighbours_Coordinates1***"
+  # puts @neighbours_cordinates
+  # puts @neighbours_cordinates.length
+
+
+  # unless (@neighbours_cordinates.length == 10) 
+   
+  #    @neighbours_cordinates = @neighbours_cordinates.map{ |x| search(@distance, x)}
+  #  # @neighboursData.map{ |x| search_rec(@distance, x.location.coordinates)}
+
+  #  puts "*******@neighboursData2***"
+  # puts @neighbours_cordinates
+    
+  # end   
+  
+# end
+# @present = @temp.map { |p| search_rec(@distance, p) }
+#@present = search_rec(@distance, @present)
+
+
+# def search_neighbours(c, d)
+
+#   @queryData = Place.geo_near(c).spherical.max_distance(d)
+
+
+#   puts "****@queryData******"
+#   puts @queryData.map { |e| e._id }
+
+#   if @queryData.nil?
+#      @queryData = Place.geo_near(c).spherical.max_distance(1)
+#    end
+
+
+# @neighbours_data = @queryData
+
+
+#   @neighbours_array = @neighbours_data.map{|d| d._id}
+#   @neighbours_cordinates = @neighbours_data.map {|d| d.location.coordinates}
+#   puts "****@neighbours_cordinates******"
+#   puts @neighbours_cordinates
+#   puts "******************************"
+#   @present = @neighbours_cordinates
+
+# # return @present, @neighbours_cordinates, @neighbours_array
+
+  
+# end
+# @d = 0.00001
+# search_neighbours(@temp[0], @d)
 
 
 
-  #@pre = @present.map { |n| search_neighbours(n, @d) }
+#   @pre = @present.map { |n| search_neighbours(n, @d) }.uniq 
+
+
+
+#   #@pre = @present.map { |n| search_neighbours(n, @d) }
     
  
 
-  puts "**********"
-  puts @queryData.map { |e| e._id }
+#   puts "**********"
+#   puts @queryData.map { |e| e._id }
 
 
 #search_neighbour(@temp)
