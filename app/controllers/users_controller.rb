@@ -18,6 +18,7 @@ class UsersController < ApplicationController
     @present = Array.new  #Array of In-Boundary users/InStadium Users
     @boundary = Array.new  #Array of Boundary User (The main output array)
     @neighbours_array = Array.new
+    @presentFinal = Array.new
 
     #Event Data Starts
     @events = Event.all
@@ -66,19 +67,27 @@ class UsersController < ApplicationController
 
     @neighbours_cordinates = Array.new
 
+    @present << @temp
+
+    #making 3d (@presentArray [[[x,y]]]) tp 2d@present [[]] array to comapre
+     @present.each do |x|
+      x.each do |y|
+        @presentFinal << y
+      end
+    end
+
 
 def search_rec(dist, coordinates)
 
-
-
-  unless @present.length == 5
-
+  unless @present.length == 8
 
 @nextData = Array.new()
 for i in 1..coordinates.length
 
-    @localTemp = Array.new()
-    
+    localTemp = Array.new()
+    @p = Array.new 
+    @uniqArray = Array.new 
+
 
     puts "******localTemp0****"
     puts @localTemp
@@ -91,77 +100,66 @@ for i in 1..coordinates.length
     puts @q
 
     @queryData = Place.geo_near(@q).spherical.max_distance(dist)
+    b = @queryData
 
 
-    #extract the location.coordinates from @queryData and put it in @localTemp 
+    #extract the location.coordinates from @queryData and put it in @uniqArray(2D array of coordinates) 
+    @queryData.map { |x| @uniqArray << x.location.coordinates }
+   
 
-    @queryData.map { |x| @localTemp = x.location.coordinates }
-    
+    #Extracting Uniq coordinates by comaparing presentFinal data with new data 
+   @uniqArray = @uniqArray-@presentFinal
 
-    puts "*******@queryData mapped to @localTemp[]"
-    puts @localTemp 
+   if @uniqArray.empty?
+
+    @boundary = coordinates
+
+    puts"***Array is Empty****"
+    @distance = 0.00002
+
+     
+
+  else
+
+   #map uniq array to presentFinal 2D Array 
+   @uniqArray.map { |e| @presentFinal << e  }
+ end
+
+   @queryData.map { |x| localTemp = x.location.coordinates }     
+
 
     #Push each set of coordinates from @localTemp to @present
     # @localTemp.map { |x| @present << x  }
-    @present << @queryData.map { |x| x.location.coordinates }.uniq
+    @presentTemp = @queryData.map { |x| x.location.coordinates }.uniq
+    
 
-     puts "*******@present"
-    puts  @present
+    @present << @presentTemp.map { |x| x }
+   
+
+    #@present << @queryData.map { |x| x.location.coordinates }.uniq
+
+     
+
 
     #push each set of coordinates from @localTemp to @nextData for next iteration after this for loop
     #@localTemp.map { |x| @nextData << x  }
-    @nextData << @localTemp
+    @nextData << localTemp
 
     puts "*******@nextData"
     puts @nextData 
 
 
-
+  search_rec(@distance, @nextData)
   end
-
-  #search_rec(dist, @nextData)
-
-
-
-
-    # def query(c, dist)
-    #   @queryData = Place.geo_near(c).spherical.max_distance(dist)
-    #   puts "********@queryData****" 
-    #   puts @queryData
-    # end
-
-
-    # @localTemp.map { |x| Place.geo_near(@c).spherical.max_distance(dist)  }
-
-    #  puts "******
-    # localTemp.map { |x| query(x, dist)  }}****"
-    # puts @localTemp
-
-    # # localTemp.map { |x| x.location.coordinates }
-
-    #  puts "******localTemp.map { |x| x.location.coordinates }****"
-    # puts @localTemp
-
-    # @localTemp.map { |x| @present << x }.uniq
-
-    #  puts "******localTemp.map { |x| @present << x }.uniq****"
-    # puts @localTemp
-
-    # search_rec(dist, @temp)
-
-  # @neighboursData = Place.geo_near(coordinates).spherical.max_distance(dist)
-
-  #    puts "*******@neighboursData***"
-  #  @neighboursData.each do |d|
-  #   puts d.location.coordinates
+ 
   end
 
 end
 search_rec(@distance, @temp)
 
 
-search_rec(@distance, @nextData)
-search_rec(@distance, @nextData)
+# search_rec(@distance, @nextData)
+
 # search_rec(@distance, @nextData)
 
 
