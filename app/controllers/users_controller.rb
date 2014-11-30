@@ -157,10 +157,7 @@ for i in 1..coordinates.length
 end
 search_rec(@distance, @temp)
 
-def BranchTest
-  #this method id to test the branch
-  
-end
+
 
 
 # search_rec(@distance, @nextData)
@@ -282,7 +279,10 @@ end
 
   end
 
-  def masterMethod
+ def masterMethod
+    
+  end
+  def BranchMethod
     
   end
 
