@@ -282,6 +282,10 @@ end
 
   end
 
+  def masterMethod
+    
+  end
+
   # GET /users/new
   def new
     @user = User.new
