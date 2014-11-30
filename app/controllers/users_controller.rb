@@ -279,6 +279,9 @@ search_rec(@distance, @temp)
 
   end
 
+ def masterMethod
+    
+  end
   def BranchMethod
     
   end
