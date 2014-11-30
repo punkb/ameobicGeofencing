@@ -158,6 +158,8 @@ end
 search_rec(@distance, @temp)
 
 
+
+
 # search_rec(@distance, @nextData)
 
 # search_rec(@distance, @nextData)
@@ -275,6 +277,10 @@ search_rec(@distance, @temp)
     # #@data = User.where(name: "Pankaj")
 
 
+  end
+
+  def BranchMethod
+    
   end
 
   # GET /users/new
